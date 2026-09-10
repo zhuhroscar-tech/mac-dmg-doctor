@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mac-dmg-doctor"
+version = "0.1.0"
+description = "Diagnose resource-busy mount blocks for DMG and mounted volumes"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [{name = "zhuhroscar-tech"}]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Operating System :: MacOS :: MacOS X",
+    "Environment :: Console",
+]
+keywords = ["macOS", "diagnostics", "dmg", "eject", "unmount", "busy", "lsof"]
+dependencies = []
+
+[project.scripts]
+mac-dmg-doctor = "mac_dmg_doctor.cli:main"
+
+[tool.setuptools]
+packages = ["mac_dmg_doctor"]
