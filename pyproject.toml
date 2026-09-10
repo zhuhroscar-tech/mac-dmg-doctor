@@ -23,4 +23,5 @@ dependencies = []
 mac-dmg-doctor = "mac_dmg_doctor.cli:main"
 
 [tool.setuptools]
+package-dir = {"" = "src"}
 packages = ["mac_dmg_doctor"]
