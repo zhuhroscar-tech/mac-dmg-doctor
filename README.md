@@ -17,12 +17,17 @@ guess. Run it, read the plain-English report, then close the offending app and
 try again. It never force-quits anything or unmounts a drive for you — it only
 looks and reports.
 
+![mac-dmg-doctor example output](docs/images/example-output.png)
+
 ```text
-$ mac-dmg-doctor scan
-/Volumes/MyImage: 2 open handle(s)
-  - Finder (pid 412) has an open handle under /Volumes/MyImage
-  - QuickLookSatellite (pid 8831) has an open handle under /Volumes/MyImage
-Suggestion: quit Finder windows browsing this volume, then retry eject.
+$ mac-dmg-doctor inspect /Volumes/TestImage
+Mountpoint: /Volumes/TestImage
+Device: /dev/disk4s1
+Open handles: 0
+Recommendations:
+ - No open handles detected via lsof for this mountpoint.
+ - Try a standard detach: hdiutil detach /dev/disk4s1
+ - If a system process holds the volume, wait a few seconds and retry.
 ```
 
 ## Usage
