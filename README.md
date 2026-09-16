@@ -1,55 +1,55 @@
+[![English](https://img.shields.io/badge/English-555555?style=flat)](README.md) [![简体中文](https://img.shields.io/badge/简体中文-555555?style=flat)](README.zh-CN.md)
+
 # mac-dmg-doctor
 
-[![Release](https://img.shields.io/github/v/release/zhuhroscar-tech/mac-dmg-doctor?include_prereleases&label=release)](https://github.com/zhuhroscar-tech/mac-dmg-doctor/releases/tag/v0.1.0)
+A read-only macOS CLI for investigating “Resource busy” errors when ejecting DMGs or other mounted volumes. It lists processes with open references and prints next-step guidance so you can close applications normally before retrying an eject.
 
-`mac-dmg-doctor` is a lightweight diagnostic helper for macOS users who see
-"Resource busy" or similar errors when detaching/unmounting DMG or mounted
-volumes.
+The tool does **not** kill processes, detach disk images, or force-unmount volumes. Any suggested `hdiutil detach` command is text for you to review, not an action it performs.
 
-It only *reads* system state and prints safe guidance; it does not forcefully
-terminate processes or run destructive unmount operations.
+## Install
 
-## Simple explanation
-
-If a Mac refuses to eject a disk image with a "Resource busy" error, this tool
-tells you which app or process is still using it, instead of leaving you to
-guess. Run it, read the plain-English report, then close the offending app and
-try again. It never force-quits anything or unmounts a drive for you — it only
-looks and reports.
-
-![mac-dmg-doctor example output](docs/images/example-output.png)
-
-```text
-$ mac-dmg-doctor inspect /Volumes/TestImage
-Mountpoint: /Volumes/TestImage
-Device: /dev/disk4s1
-Open handles: 0
-Recommendations:
- - No open handles detected via lsof for this mountpoint.
- - Try a standard detach: hdiutil detach /dev/disk4s1
- - If a system process holds the volume, wait a few seconds and retry.
-```
-
-## Usage
+Requires macOS, Python 3.8+, and the system tools `mount`, `lsof`, and `hdiutil`. There are no third-party Python runtime dependencies.
 
 ```bash
-# Scan mounted volumes with open handles
-mac-dmg-doctor scan
-
-# Inspect a specific mount point
-mac-dmg-doctor inspect /Volumes/MyImage
-
-# JSON output for scripting
-mac-dmg-doctor scan --json
-mac-dmg-doctor inspect /Volumes/MyImage --json
+git clone https://github.com/zhuhroscar-tech/mac-dmg-doctor.git
+cd mac-dmg-doctor
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e .
 ```
 
-## Checks performed
+## Quick start
 
-- Reads `mount` output and highlights mount points under `/Volumes`.
-- Uses `lsof +D <path>` to detect open file handles.
-- Uses `hdiutil info` (if available) to correlate mounts to image paths.
+```bash
+mac-dmg-doctor scan
+mac-dmg-doctor inspect "/Volumes/My Image"
+mac-dmg-doctor --json scan
+mac-dmg-doctor --json inspect "/Volumes/My Image"
+```
 
-## Security
+`--json` is a global option: place it **before** `scan` or `inspect`. With no subcommand, the CLI defaults to scanning.
 
-No filesystem writes are performed.
+- `scan` reads mounts under `/Volumes/` and reports those with detected open processes.
+- `inspect` checks one path and includes device information when it matches a known mount point, process names/PIDs, and recommendations.
+- `hdiutil info` supplies image-path hints where the parser can correlate them.
+
+After closing a listed application, rerun `inspect` and try a normal eject in Finder. Verify the device identifier before following any manual detach suggestion.
+
+## Limitations and safety
+
+Inspection uses recursive `lsof +D`, which can be slow on large directory trees. Its query times out after five seconds. Missing tools, permission restrictions, failed commands, and timeouts can result in empty process lists; **“no busy mount points detected” is not a guarantee that a volume is safe to detach**.
+
+The displayed open-handle count is actually a count of deduplicated command/PID entries, not individual file descriptors. Image-path correlation is best-effort. Diagnostic commands normally return `0`, including when blockers are found, so inspect the report rather than using the exit code as a busy/idle signal.
+
+The application only reads system state and does not write files or change mount state. Reports can contain local paths and process names; review them before sharing.
+
+## Preview and development
+
+[Example output](docs/images/example-output.png) · [Demo video](docs/demo.mp4)
+
+```bash
+python -m pip install pytest
+python -m pytest -v
+```
+
+[Implementation](src/mac_dmg_doctor/cli.py) · [Tests](tests/test_cli.py) · [MIT license](LICENSE)
