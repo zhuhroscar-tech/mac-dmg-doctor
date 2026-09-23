@@ -2,54 +2,34 @@
 
 # mac-dmg-doctor
 
-A read-only macOS CLI for investigating “Resource busy” errors when ejecting DMGs or other mounted volumes. It lists processes with open references and prints next-step guidance so you can close applications normally before retrying an eject.
+`mac-dmg-doctor` has moved into [`mac-volume-doctor`](https://github.com/zhuhroscar-tech/mac-volume-doctor), the consolidated macOS volume-eject diagnostic suite.
 
-The tool does **not** kill processes, detach disk images, or force-unmount volumes. Any suggested `hdiutil detach` command is text for you to review, not an action it performs.
-
-## Install
-
-Requires macOS, Python 3.8+, and the system tools `mount`, `lsof`, and `hdiutil`. There are no third-party Python runtime dependencies.
+The original DMG/resource-busy functionality is now available as:
 
 ```bash
-git clone https://github.com/zhuhroscar-tech/mac-dmg-doctor.git
-cd mac-dmg-doctor
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -e .
+mac-volume-doctor dmg scan
+mac-volume-doctor dmg inspect "/Volumes/My Image"
+mac-volume-doctor dmg --json scan
 ```
 
-## Quick start
+For compatibility, installing `mac-volume-doctor` also provides the legacy command name:
 
 ```bash
 mac-dmg-doctor scan
-mac-dmg-doctor inspect "/Volumes/My Image"
-mac-dmg-doctor --json scan
-mac-dmg-doctor --json inspect "/Volumes/My Image"
 ```
 
-`--json` is a global option: place it **before** `scan` or `inspect`. With no subcommand, the CLI defaults to scanning.
+This repository is archived as a migration pointer. Use `mac-volume-doctor` for new installs, fixes, and issues.
 
-- `scan` reads mounts under `/Volumes/` and reports those with detected open processes.
-- `inspect` checks one path and includes device information when it matches a known mount point, process names/PIDs, and recommendations.
-- `hdiutil info` supplies image-path hints where the parser can correlate them.
-
-After closing a listed application, rerun `inspect` and try a normal eject in Finder. Verify the device identifier before following any manual detach suggestion.
-
-## Limitations and safety
-
-Inspection uses recursive `lsof +D`, which can be slow on large directory trees. Its query times out after five seconds. Missing tools, permission restrictions, failed commands, and timeouts can result in empty process lists; **“no busy mount points detected” is not a guarantee that a volume is safe to detach**.
-
-The displayed open-handle count is actually a count of deduplicated command/PID entries, not individual file descriptors. Image-path correlation is best-effort. Diagnostic commands normally return `0`, including when blockers are found, so inspect the report rather than using the exit code as a busy/idle signal.
-
-The application only reads system state and does not write files or change mount state. Reports can contain local paths and process names; review them before sharing.
-
-## Preview and development
-
-[Example output](docs/images/example-output.png) · [Demo video](docs/demo.mp4)
+## Migration
 
 ```bash
-python -m pip install pytest
-python -m pytest -v
+git clone https://github.com/zhuhroscar-tech/mac-volume-doctor.git
+cd mac-volume-doctor
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[test]"
 ```
 
-[Implementation](src/mac_dmg_doctor/cli.py) · [Tests](tests/test_cli.py) · [MIT license](LICENSE)
+The migrated check remains read-only: it inspects `mount`, `lsof`, and `hdiutil info`; it does not kill processes, force-unmount volumes, or detach disk images.
+
+[mac-volume-doctor](https://github.com/zhuhroscar-tech/mac-volume-doctor) · [MIT license](LICENSE)

@@ -4,14 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mac-dmg-doctor"
-version = "0.1.0"
+version = "0.1.1"
 description = "Diagnose resource-busy mount blocks for DMG and mounted volumes"
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = "MIT"}
+license = "MIT"
 authors = [{name = "zhuhroscar-tech"}]
 classifiers = [
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Operating System :: MacOS :: MacOS X",
     "Environment :: Console",
